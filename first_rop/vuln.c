@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 char name[32];
 
@@ -20,4 +22,9 @@ int main()
 	puts(echo);
 
 	return 0;
+}
+
+void getrdi()
+{
+	asm("pop %rdi\nret");
 }
