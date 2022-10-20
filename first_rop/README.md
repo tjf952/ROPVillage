@@ -1,12 +1,12 @@
 ## My First ROP Chain
 
-### [vuln.c](first_rop/vuln.c)
+### [vuln.c](vuln.c)
 
 This script was written with the intention of being vulnerable to a buffer overflow and ROP chain. It has a vulnerable read() function that will allow for overwriting the EIP and a valid system() call that can be used to get RCE by making a call to the location in memory.
 
 Cmd to build: `gcc -w -fno-stack-protector -no-pie vuln.c -o vuln`
 
-### [exploit.py](first_rop/expoit.py)
+### [exploit.py](expoit.py)
 
 This script intends to take advantage of the vulnerable binary. I used the following steps to develop it and exploit the application:
 
