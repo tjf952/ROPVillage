@@ -119,7 +119,7 @@ gef➤  disass usefulFunction
 Dump of assembler code for function usefulFunction:
    0x0000000000400742 <+0>:	push   rbp
    0x0000000000400743 <+1>:	mov    rbp,rsp
-   0x0000000000400746 <+4>:	mov    edi,0x40084a
+   0x0000000000400746 <+4>:	mov    edi,0xrpg rd40084a
    0x000000000040074b <+9>:	call   0x400560 <system@plt>
    0x0000000000400750 <+14>:	nop
    0x0000000000400751 <+15>:	pop    rbp
