@@ -135,6 +135,68 @@ SYSTEM
 ```
 When the overflow happens the next call will be the first instruction on the stack. For a system call to succeed, it needs one argument. The first argument is $rdi, so before the system call, a `pop rdi`instruction must be made to prepare the string into $rdi. Adding this to the payload will result in printing the string.
 
+### [callme](callme/callme.py)
+
+**Enumeration**
+
+```
+$ rabin2 -i callme
+[Imports]
+nth vaddr      bind   type   lib name
+―――――――――――――――――――――――――――――――――――――
+<summary>
+3   0x004006f0 GLOBAL FUNC       callme_three
+7   0x00400720 GLOBAL FUNC       callme_one
+10  0x00400740 GLOBAL FUNC       callme_two
+
+$ rabin2 -R callme
+[Relocations]
+vaddr      paddr      type   name
+―――――――――――――――――――――――――――――――――
+<summary>
+0x00601028 0x00001028 SET_64 callme_three
+0x00601040 0x00001040 SET_64 callme_one
+0x00601050 0x00001050 SET_64 callme_two
+
+$ rabin2 -z callme
+[Strings]
+nth paddr      vaddr      len size section type  string
+―――――――――――――――――――――――――――――――――――――――――――――――――――――――
+0   0x000009c8 0x004009c8 22  23   .rodata ascii callme by ROP Emporium
+1   0x000009df 0x004009df 7   8    .rodata ascii x86_64\n
+2   0x000009e7 0x004009e7 8   9    .rodata ascii \nExiting
+3   0x000009f0 0x004009f0 34  35   .rodata ascii Hope you read the instructions...\n
+4   0x00000a16 0x00400a16 10  11   .rodata ascii Thank you!
+```
+Instructions state the following:
+> You must call the callme_one(), callme_two() and callme_three() functions in that order, each with the arguments 0xdeadbeef, 0xcafebabe, 0xd00df00d e.g. callme_one(0xdeadbeef, 0xcafebabe, 0xd00df00d) to print the flag. For the x86_64 binary double up those values, e.g. callme_one(0xdeadbeefdeadbeef, 0xcafebabecafebabe, 0xd00df00dd00df00d).
+Using this, order the ROP chain to make calls to these functions.
+
+**Exploiting**
+
+Taking a closer look at those three special functions show:
+```
+gef➤  disass callme_one
+Dump of assembler code for function callme_one@plt:
+   0x0000000000400720 <+0>:   jmp    QWORD PTR [rip+0x20091a]        # 0x601040 <callme_one@got.plt>
+   0x0000000000400726 <+6>:   push   0x5
+   0x000000000040072b <+11>:  jmp    0x4006c0
+End of assembler dump.
+gef➤  disass callme_two
+Dump of assembler code for function callme_two@plt:
+   0x0000000000400740 <+0>:   jmp    QWORD PTR [rip+0x20090a]        # 0x601050 <callme_two@got.plt>
+   0x0000000000400746 <+6>:   push   0x7
+   0x000000000040074b <+11>:  jmp    0x4006c0
+End of assembler dump.
+gef➤  disass callme_three
+Dump of assembler code for function callme_three@plt:
+   0x00000000004006f0 <+0>:   jmp    QWORD PTR [rip+0x200932]        # 0x601028 <callme_three@got.plt>
+   0x00000000004006f6 <+6>:   push   0x2
+   0x00000000004006fb <+11>:  jmp    0x4006c0
+```
+Each function pushes its .got.plt entry's offset, then jmps to the head of the .plt. The push; jmp; at the head of the .plt pushes the 2nd entry of the .got.plt, which is the address of the linkmap head, then jmps to the 3rd entry: a resolved function named.
+
+To create the ROP chain, get gadgets for the first three arguments $rdi, $rsi, $rdx.
 
 ### Tools
 
