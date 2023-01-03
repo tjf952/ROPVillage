@@ -1,5 +1,8 @@
 ## [ROP Emporium](https://ropemporium.com/)
 
+### Table of Contents
+
+
 ### [ret2win](ret2win/ret2win.py)
 
 **Enumeration**
@@ -71,6 +74,10 @@ Dump of assembler code for function ret2win:
    0x0000000000400770 <+26>:	ret    
 ```
 By overflowingg 40 bytes, and then putting the address for the function `ret2win`, we can now print the flag.
+
+**NOTE**: Needed to add a `ret` instruction for padding to solve the MOVAPS issue:
+
+> If you're segfaulting on a movaps instruction in buffered_vfprintf() or do_system() in the x86_64 challenges, then ensure the stack is 16-byte aligned before returning to GLIBC functions such as printf() or system(). Some versions of GLIBC uses movaps instructions to move data onto the stack in certain functions. The 64 bit calling convention requires the stack to be 16-byte aligned before a call instruction but this is easily violated during ROP chain execution, causing all further calls from that function to be made with a misaligned stack. movaps triggers a general protection fault when operating on unaligned data, so try padding your ROP chain with an extra ret before returning into a function or return further into a function to skip a push instruction.
 
 ### [split](split/split.py)
 
@@ -196,7 +203,27 @@ Dump of assembler code for function callme_three@plt:
 ```
 Each function pushes its .got.plt entry's offset, then jmps to the head of the .plt. The push; jmp; at the head of the .plt pushes the 2nd entry of the .got.plt, which is the address of the linkmap head, then jmps to the 3rd entry: a resolved function named.
 
-To create the ROP chain, get gadgets for the first three arguments $rdi, $rsi, $rdx.
+To create the ROP chain, get gadgets for the first three arguments $rdi, $rsi, $rdx. Luckily, when using the ropper tool, there is a gadget to pop all three of those in order `pop rdi; pop rsi; pop rdx; ret;` at location 0x40093c. Follow that up with the correct arguments to validate the callme functions and then the actual calls to callme_one, callme_two, and callme_three. Each time a call to one of the *callme* functions is made, the args will have to be repopulated because of modifcation during the previous *callme* function.
+
+### [callme](callme/callme.py)
+
+**Enumeration**
+
+In gdb (gef):
+
+```
+gef➤  info fun
+...
+0x0000000000400500  pwnme@plt > function for input
+0x0000000000400510  print_file@plt > prints
+0x0000000000400607  main > has pwnme
+0x0000000000400617  usefulFunction > calls print_file
+0x0000000000400628  usefulGadgets > gadget to push r15 r14 and modify rax
+...
+```
+
+**Exploiting**
+
 
 ### Tools
 
